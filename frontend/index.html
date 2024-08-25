@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Interface</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Info Sections -->
+        <div class="info-sections">
+            <div class="info-section mitre-info">
+                <input type="text" id="mitre-query" placeholder="Enter MITRE ATT&CK technique...">
+                <button id="get-mitre-info-button">Get MITRE Info</button>
+            </div>
+            <div class="info-section d3fend-info">
+                <input type="text" id="d3fend-query" placeholder="Enter D3FEND technique...">
+                <button id="get-d3fend-info-button">Get D3FEND Info</button>
+            </div>
+        </div>
+        
+        <!-- Chat Container -->
+        <div class="chat-container">
+            <div class="chat-window" id="chat-window"></div>
+            <div class="input-container">
+                <textarea id="user-input" placeholder="Type your message..."></textarea>
+                <button id="send-button">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
