@@ -1,8 +1,12 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from stix2 import MemoryStore, Filter
 import os
 
 app = Flask(__name__)
+
+# Configure CORS
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Define local paths for ATT&CK data
 paths = {
@@ -40,8 +44,19 @@ except (ValueError, FileNotFoundError) as e:
     src = None  # Initialize src to None if data loading fails
 
 
-@app.route('/object/<stix_id>', methods=['GET'])
+@app.after_request
+def after_request(response):
+    """Add CORS headers to responses."""
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+    return response
+
+
+@app.route('/object/<stix_id>', methods=['GET', 'POST', 'OPTIONS'])
 def get_object_by_stix_id(stix_id):
+    if request.method == 'OPTIONS':
+        return '', 204
     if not src:
         return jsonify({"error": "Data source not initialized"}), 500
     obj = src.get(stix_id)
@@ -50,8 +65,10 @@ def get_object_by_stix_id(stix_id):
     return jsonify({"error": "Object not found"}), 404
 
 
-@app.route('/attack-id/<attack_id>', methods=['GET'])
+@app.route('/attack-id/<string:attack_id>', methods=['GET', 'POST', 'OPTIONS'])
 def get_object_by_attack_id(attack_id):
+    if request.method == 'OPTIONS':
+        return '', 204
     if not src:
         return jsonify({"error": "Data source not initialized"}), 500
     objs = src.query([Filter("external_references.external_id", "=", attack_id)])
@@ -60,8 +77,10 @@ def get_object_by_attack_id(attack_id):
     return jsonify({"error": "Object not found"}), 404
 
 
-@app.route('/name/<name>', methods=['GET'])
+@app.route('/name/<name>', methods=['GET', 'POST', 'OPTIONS'])
 def get_object_by_name(name):
+    if request.method == 'OPTIONS':
+        return '', 204
     if not src:
         return jsonify({"error": "Data source not initialized"}), 500
     filt = [Filter('type', '=', 'attack-pattern'), Filter('name', '=', name)]
@@ -71,8 +90,10 @@ def get_object_by_name(name):
     return jsonify({"error": "Object not found"}), 404
 
 
-@app.route('/alias/<alias>', methods=['GET'])
+@app.route('/alias/<alias>', methods=['GET', 'POST', 'OPTIONS'])
 def get_object_by_alias(alias):
+    if request.method == 'OPTIONS':
+        return '', 204
     if not src:
         return jsonify({"error": "Data source not initialized"}), 500
     filt = [Filter('type', '=', 'intrusion-set'), Filter('aliases', '=', alias)]
@@ -82,8 +103,10 @@ def get_object_by_alias(alias):
     return jsonify({"error": "Object not found"}), 404
 
 
-@app.route('/type/<stix_type>', methods=['GET'])
+@app.route('/type/<stix_type>', methods=['GET', 'POST', 'OPTIONS'])
 def get_objects_by_type(stix_type):
+    if request.method == 'OPTIONS':
+        return '', 204
     if not src:
         return jsonify({"error": "Data source not initialized"}), 500
     objs = src.query([Filter("type", "=", stix_type)])
@@ -92,8 +115,10 @@ def get_objects_by_type(stix_type):
     return jsonify({"error": "Objects not found"}), 404
 
 
-@app.route('/techniques', methods=['GET'])
+@app.route('/techniques', methods=['GET', 'POST', 'OPTIONS'])
 def get_techniques():
+    if request.method == 'OPTIONS':
+        return '', 204
     if not src:
         return jsonify({"error": "Data source not initialized"}), 500
     include = request.args.get('include', 'both')
@@ -102,15 +127,19 @@ def get_techniques():
     return jsonify([obj.serialize() for obj in get_techniques_or_subtechniques(src, include)]), 200
 
 
-@app.route('/software', methods=['GET'])
+@app.route('/software', methods=['GET', 'POST', 'OPTIONS'])
 def get_software_info():
+    if request.method == 'OPTIONS':
+        return '', 204
     if not src:
         return jsonify({"error": "Data source not initialized"}), 500
     return jsonify([obj.serialize() for obj in get_software(src)]), 200
 
 
-@app.route('/content', methods=['GET'])
+@app.route('/content', methods=['GET', 'POST', 'OPTIONS'])
 def get_techniques_by_content_route():
+    if request.method == 'OPTIONS':
+        return '', 204
     if not src:
         return jsonify({"error": "Data source not initialized"}), 500
     content = request.args.get('content')
@@ -119,15 +148,19 @@ def get_techniques_by_content_route():
     return jsonify([obj.serialize() for obj in get_techniques_by_content(src, content)]), 200
 
 
-@app.route('/platform/<platform>', methods=['GET'])
+@app.route('/platform/<platform>', methods=['GET', 'POST', 'OPTIONS'])
 def get_techniques_by_platform_route(platform):
+    if request.method == 'OPTIONS':
+        return '', 204
     if not src:
         return jsonify({"error": "Data source not initialized"}), 500
     return jsonify([obj.serialize() for obj in get_techniques_by_platform(src, platform)]), 200
 
 
-@app.route('/tactic/<tactic>', methods=['GET'])
+@app.route('/tactic/<tactic>', methods=['GET', 'POST', 'OPTIONS'])
 def get_tactic_techniques_route(tactic):
+    if request.method == 'OPTIONS':
+        return '', 204
     if not src:
         return jsonify({"error": "Data source not initialized"}), 500
     return jsonify([obj.serialize() for obj in get_tactic_techniques(src, tactic)]), 200
@@ -191,4 +224,4 @@ def get_tactic_techniques(thesrc, tactic):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000)
