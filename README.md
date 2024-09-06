@@ -1,7 +1,3 @@
-Sure! Here’s the README formatted properly:
-
----
-
 # Project Name
 
 ## Overview
