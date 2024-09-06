@@ -25,8 +25,8 @@ This project includes a Python script (`loggen.py`) and a Node.js server (`index
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
-   cd <repository-directory>
+   git clone https://github.com/AshJai23/JAIATD3.git
+   cd JAIATD3
    ```
 
 2. Install required Python packages:
@@ -96,7 +96,7 @@ curl -X POST http://localhost:4000/chat -H "Content-Type: application/json" -d '
 1. Fork the repository.
 2. Create a feature branch:
    ```bash
-   git checkout -b feature-branch
+   git checkout -b main
    ```
 3. Commit your changes:
    ```bash
@@ -104,7 +104,7 @@ curl -X POST http://localhost:4000/chat -H "Content-Type: application/json" -d '
    ```
 4. Push to the branch:
    ```bash
-   git push origin feature-branch
+   git push origin main
    ```
 5. Create a new Pull Request.
 
@@ -113,5 +113,3 @@ curl -X POST http://localhost:4000/chat -H "Content-Type: application/json" -d '
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
-
-Replace placeholders like `<repository-url>` and `<repository-directory>` with your actual repository URL and directory name. Adjust any other details as needed based on the specifics of your project.
