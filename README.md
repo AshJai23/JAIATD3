@@ -107,9 +107,3 @@ curl -X POST http://localhost:4000/chat -H "Content-Type: application/json" -d '
    git push origin main
    ```
 5. Create a new Pull Request.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
