@@ -19,7 +19,7 @@ const SearchTool = () => {
     try {
       let response;
       if (attckDropdownValue === 'content') {
-        response = await axios.post('http://localhost:5000/search-technique', {
+        response = await axios.post('http://localhost:5000/search-content', {
           content: attckSearchTerm,
         });
         if (response.data && response.data.length > 0) {
@@ -32,9 +32,18 @@ const SearchTool = () => {
         }
         console.log(attckResults);
       } else if (attckDropdownValue === 'filter2') {
-        response = await axios.post('http://localhost:4000/search-technique-filter2', {
-          term: attckSearchTerm,
-        });
+        response = await axios.post('http://localhost:5000/search-attackid', {
+          ids: [attckSearchTerm],  // Assuming attckSearchTerm is an ID
+      });
+      if(response.data && response.data.length > 0){
+        const formattedMessage = response.data.map((item) => (
+          `ATT&CK ID : ${item.attack_id}\nName: ${item.name}\nID: ${item.id}\nDescription: ${item.description}\n`
+        )).join('\n');
+        setButtonMessage({ role: 'system-assistant', content: formattedMessage });
+      }else{
+        setButtonMessage({ role: 'system-assistant', content: 'No matching techniques found.' });
+      }
+      setAttckResults(response.data);
       }
 
       if (response) {
@@ -46,8 +55,30 @@ const SearchTool = () => {
     }
   };
 
-  const handleD3fendSearch = () => {
-    console.log(`D3FEND Search Term: ${d3fendSearchTerm}, Filter: ${d3fendDropdownValue}`);
+  const handleD3fendSearch = async () => {
+    try {
+      let response;
+      if (d3fendDropdownValue === 'name') {
+        response = await axios.post('http://localhost:5000/search-d3fendname', {
+          name: d3fendSearchTerm,
+        });
+      } else if (d3fendDropdownValue === 'id') {
+        response = await axios.post('http://localhost:5000/search-d3fendid', {
+          id: d3fendSearchTerm,
+        });
+      }
+
+      if (response.data && !response.data.error) {
+        const formattedMessage = `Name: ${response.data.technique_name}\nD3FEND Extraction:\n${JSON.stringify(response.data.api_response, null, 2)}`;
+        console.log(response.data)
+        setButtonMessage({ role: 'system-assistant', content: formattedMessage });
+      } else {
+        setButtonMessage({ role: 'system-assistant', content: 'No results found or an error occurred.' });
+      }
+    } catch (error) {
+      console.error('Error fetching D3FEND data:', error);
+      setButtonMessage({ role: 'system-assistant', content: 'Error fetching D3FEND data.' });
+    }
   };
 
   const handleFileChange = (e) => {
@@ -125,9 +156,8 @@ const SearchTool = () => {
             onChange={(e) => setD3fendDropdownValue(e.target.value)}
           >
             <option value="">Select Filter</option>
-            <option value="filter1">Filter 1</option>
-            <option value="filter2">Filter 2</option>
-            {/* Add more options as needed */}
+            <option value="id">Search By ID</option>
+            <option value="name">Search By Name</option>
           </select>
           <input
             type="text"

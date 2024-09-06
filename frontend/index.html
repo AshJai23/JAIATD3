@@ -11,7 +11,20 @@
         <!-- Info Sections -->
         <div class="info-sections">
             <div class="info-section mitre-info">
-                <input type="text" id="mitre-query" placeholder="Enter MITRE ATT&CK technique...">
+                <select id="api-endpoint" aria-label="Select API Endpoint">
+                    <option value="">Select API Endpoint</option>
+                    <option value="/object">Get Object by Strix ID</option>
+                    <option value="/attack-id">Get Object by ATT&CK ID</option>
+                    <option value="/name">Get Object by Name</option>
+                    <option value="/alias">Get Object by Alias</option>
+                    <option value="/type">Get Objects by Type</option>
+                    <option value="/techniques">Get Techniques</option>
+                    <option value="/software">Get Software Info</option>
+                    <option value="/content">Get Techniques by Content</option>
+                    <option value="/platform">Get Techniques by Platform</option>
+                    <option value="/tactic">Get Techniques by Tactic</option>
+                </select>
+                <input type="text" id="mitre-query" placeholder="Enter query parameter...">
                 <button id="get-mitre-info-button">Get MITRE Info</button>
             </div>
             <div class="info-section d3fend-info">
@@ -19,8 +32,6 @@
                 <button id="get-d3fend-info-button">Get D3FEND Info</button>
             </div>
         </div>
-        
-        <!-- Chat Container -->
         <div class="chat-container">
             <div class="chat-window" id="chat-window"></div>
             <div class="input-container">

@@ -6,7 +6,7 @@ document.getElementById('send-button').addEventListener('click', async () => {
     // Add user message to chat window
     appendMessage('User', userInput);
 
-    // Call backend to get response
+    // Call backend to get response from AI model at port 3000
     try {
         const response = await getModelResponse(userInput);
         appendMessage('Bot', response);
@@ -22,10 +22,19 @@ document.getElementById('send-button').addEventListener('click', async () => {
 // Event listener for fetching MITRE info
 document.getElementById('get-mitre-info-button').addEventListener('click', async () => {
     const mitreQuery = document.getElementById('mitre-query').value;
-    if (!mitreQuery) return;
+    const apiEndpoint = document.getElementById('api-endpoint').value;
+
+    if (!mitreQuery || !apiEndpoint) {
+        console.error('Missing MITRE query or endpoint');
+        return;
+    }
+
+    // Construct endpoint with query parameter
+    const fullEndpoint = `${apiEndpoint}/${mitreQuery}`;
+    console.log(`Fetching MITRE info from ${fullEndpoint} with query: ${mitreQuery}`);
 
     try {
-        const response = await getMitreInfo(mitreQuery);
+        const response = await fetchFromAPI('http://localhost:5000', fullEndpoint, mitreQuery);
         appendMessage('MITRE Info', response);
     } catch (error) {
         console.error('Error fetching MITRE info:', error);
@@ -33,13 +42,22 @@ document.getElementById('get-mitre-info-button').addEventListener('click', async
     }
 });
 
+
 // Event listener for fetching D3FEND info
 document.getElementById('get-d3fend-info-button').addEventListener('click', async () => {
     const d3fendQuery = document.getElementById('d3fend-query').value;
-    if (!d3fendQuery) return;
 
+    if (!d3fendQuery) {
+        console.error('Missing D3FEND query');
+        return;
+    }
+
+    // Log the API call details
+    console.log(`Fetching D3FEND info with query: ${d3fendQuery}`);
+
+    // Call Python server at port 5000 for D3FEND info
     try {
-        const response = await getD3fendInfo(d3fendQuery);
+        const response = await fetchFromAPI('http://localhost:5000', '/get-d3fend-info', d3fendQuery);
         appendMessage('D3FEND Info', response);
     } catch (error) {
         console.error('Error fetching D3FEND info:', error);
@@ -47,7 +65,7 @@ document.getElementById('get-d3fend-info-button').addEventListener('click', asyn
     }
 });
 
-// Function to fetch model response from the server
+// Function to fetch model response from the Node server at port 3000
 async function getModelResponse(input) {
     try {
         const response = await fetch('http://localhost:3000/api/get-response', {
@@ -55,7 +73,7 @@ async function getModelResponse(input) {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ prompt: input }), // Updated to match server expectation
+            body: JSON.stringify({ prompt: input }),
         });
 
         if (!response.ok) {
@@ -63,17 +81,21 @@ async function getModelResponse(input) {
         }
 
         const data = await response.json();
-        return data.response; // Updated to match server's response field
+        return data.response; // Adjust based on the server's response field
     } catch (error) {
         console.error('Error in getModelResponse:', error);
         return 'Sorry, there was an error.';
     }
 }
 
-// Function to fetch MITRE info from the server
-async function getMitreInfo(query) {
+// Function to fetch data from the Python server at port 5000 for MITRE/D3FEND info
+async function fetchFromAPI(baseURL, endpoint, query) {
     try {
-        const response = await fetch('http://localhost:3000/api/get-mitre-info', {
+        // Properly concatenate the URL
+        const url = `${baseURL}${endpoint}`;
+        console.log(`Fetching from URL: ${url} with query: ${JSON.stringify({ query })}`);
+        
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -86,35 +108,13 @@ async function getMitreInfo(query) {
         }
 
         const data = await response.json();
-        return data.reply; // Adjust this based on the server's response
+        return data.reply || data; // Adjust based on the server's response
     } catch (error) {
-        console.error('Error in getMitreInfo:', error);
+        console.error('Error in fetchFromAPI:', error);
         return 'Sorry, there was an error.';
     }
 }
 
-// Function to fetch D3FEND info from the server
-async function getD3fendInfo(query) {
-    try {
-        const response = await fetch('http://localhost:3000/api/get-d3fend-info', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ query }), // Send query as payload
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        return data.reply; // Adjust this based on the server's response
-    } catch (error) {
-        console.error('Error in getD3fendInfo:', error);
-        return 'Sorry, there was an error.';
-    }
-}
 
 // Function to append messages to the chat window
 function appendMessage(sender, text) {
